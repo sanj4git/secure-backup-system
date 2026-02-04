@@ -113,3 +113,43 @@ export const restoreFile = async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 };
+
+// ==============================
+// GET USER FILES (Dashboard View)
+// ==============================
+export const getMyFiles = async (req, res) => {
+  try {
+    // Find files where ownerId matches logged-in user
+    const files = await File.find({ ownerId: req.user._id }).select(
+      "filename fileType createdAt"
+    );
+
+    res.json({
+      msg: "Your backup files fetched successfully",
+      count: files.length,
+      files
+    });
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
+
+// ==============================
+// ADMIN: VIEW ALL FILE METADATA
+// ==============================
+export const getAllFilesAdmin = async (req, res) => {
+  try {
+    // Admin fetches all files, but only metadata
+    const files = await File.find()
+      .populate("ownerId", "email role")
+      .select("filename fileType createdAt ownerId");
+
+    res.json({
+      msg: "All backup metadata fetched (Admin view)",
+      count: files.length,
+      files
+    });
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
