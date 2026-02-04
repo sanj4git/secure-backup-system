@@ -12,14 +12,6 @@ A secure file backup and restore backend system built using **MERN stack princip
 
 ---
 
-## 📌 Project Objective
-
-This project is developed as part of **23CSE313 - Foundations of Cyber Security Lab Evaluation**.
-
-The system allows users to securely upload files for backup, store them in encrypted form, and restore them only if authorized.
-
----
-
 ## ✅ Security Features Implemented
 
 ### 1. Authentication (NIST SP 800-63-2 Model)
@@ -213,16 +205,3 @@ This project satisfies all required lab components:
 - ✅ Digital Signature Verification
 - ✅ Encoding (Base64)
 - ✅ Audit Logging + Security Awareness
-
----
-
-## 👨‍💻 Author
-
-Developed by **Sanjay**  
-23CSE313 - Cyber Security Lab Project
-
----
-
-## 📌 GitHub Repo Description (Short)
-
-Secure Backup & Restore System implementing MFA, ACL authorization, AES+RSA hybrid encryption, hashing, and digital signatures.
