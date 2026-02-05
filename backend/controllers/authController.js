@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import { sendOTPEmail } from "../utils/emailService.js";
 import OTP from "../models/OTP.js";
 import { generateOTP } from "../utils/otpService.js";
 
@@ -70,7 +70,15 @@ const loginUser = async (req, res) => {
             expiresAt : new Date(Date.now() + 5 * 60 * 1000)
         });
 
-        console.log("OTP for testing : ", otp);
+        if (user.role === "USER") {
+
+            await sendOTPEmail(user.email, otp);
+        
+        } else {
+        
+            console.log("OTP for testing :", otp);
+        
+        }
     
         res.status(200).json({
             msg : "Login Success, Enter OTP",
@@ -90,35 +98,56 @@ const loginUser = async (req, res) => {
 // Verify OTP, Issue JWT
 export const verifyOTP = async (req, res) => {
 
-    const { userId, otp } = req.body;
+    try {
 
-    const record = await OTP.findOne({userId});
+        const { userId, otp } = req.body;
 
-    if (!record)
-        return res.status(400).json({ msg: "OTP not found. Please login again." });
+        const record = await OTP.findOne({ userId });
 
-    const isValid = await bcrypt.compare(otp, record.otpHash);
+        if (!record)
+            return res.status(400).json({ msg: "OTP not found. Please login again." });
 
-    if(record.expiresAt < new Date())
-        return res.status(400).json({msg : "OTP Expired"});
+        // Debug logs AFTER record exists
+        console.log("Entered OTP from frontend:", otp);
+        console.log("Type of entered OTP:", typeof otp);
+        console.log("Stored hash from DB:", record.otpHash);
 
-    if(!isValid)
-        return res.status(400).json({msg : "Invalid OTP"});
+        const enteredOtp = String(otp).trim();
 
-    await OTP.deleteMany({ userId });
+        const isValid = await bcrypt.compare(enteredOtp, record.otpHash);
 
-    // Generate Token JWT
-    const token = jwt.sign(
-        {id : userId},
-        process.env.JWT_SECRET,
-        { expiresIn : "1d" }
-    );
+        console.log("bcrypt result:", isValid);
 
-    res.json({
-        msg : "OTP Verification Complete!",
-        token
-    });
+        if(record.expiresAt < new Date())
+            return res.status(400).json({msg : "OTP Expired"});
 
+        if(!isValid)
+            return res.status(400).json({msg : "Invalid OTP"});
+
+        await OTP.deleteMany({ userId });
+
+        const user = await User.findById(userId);
+
+        const token = jwt.sign(
+            { id : userId },
+            process.env.JWT_SECRET,
+            { expiresIn : "1d" }
+        );
+
+        res.json({
+            msg : "OTP Verification Complete!",
+            token,
+            user : {
+                id : user._id,
+                email : user.email,
+                role : user.role
+            }
+        });
+
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({msg : error.message});
+    }
 };
 
 export {registerUser, loginUser};
