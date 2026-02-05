@@ -2,8 +2,8 @@ import crypto from "crypto";
 import fs from "fs";
 
 // Load RSA keys
-const publicKey = fs.readFileSync("keys/public.pem", "utf8");
-const privateKey = fs.readFileSync("keys/private.pem", "utf8");
+const publicKey = process.env.PUBLIC_KEY.replace(/\\n/g, "\n");
+const privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, "\n");
 
 // AES Encrypt File Buffer
 export const encryptFileHybrid = (buffer) => {
